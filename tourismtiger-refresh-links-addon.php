@@ -45,7 +45,7 @@ class Https_Links
                 self::$needle = str_replace('https://', 'http://', self::$site_url );
             endif;
 
-            if ( false && strpos(self::$site_url, 'http://') === 0 ) : // TODO: Test
+            if ( false && strpos(self::$site_url, 'http://') === 0 ) : // TODO: For testing while development
                 self::$https_link_test = 1;
                 self::$replacement_test = str_replace('http://', 'https://', self::$site_url );
             endif;
@@ -110,9 +110,11 @@ class Https_Links
 
 
     /**
-     *
+     * Testing function for demo purposes
      */
     public static function refresh_links_processing_test(){
+        return;
+
         global $wpdb;
         $resp = '';
 
@@ -138,7 +140,7 @@ class Https_Links
             $resp = $wpdb->query( $query );
         endif;
 
-        print_r_html([$links, $links_meta, 'resp'=>$resp, $query, self::$replacement_test, self::$https_link_test]);
+        // print_r_html([$links, $links_meta, 'resp'=>$resp, $query, self::$replacement_test, self::$https_link_test]);
     }
 
 
@@ -166,24 +168,6 @@ class Https_Links
             )
         );
     }
-
-
-    /**
-     * @param $content
-     * @return string|string[]
-     */
-    public static function update_content($content){
-        if (self::$https_link)
-            $content = str_replace(self::$needle, self::$site_url, $content);
-
-        print_r_html([self::$https_link_test, strpos(self::$site_url, 'http://'), strpos(self::$site_url, 'https://')]);
-
-        if (self::$https_link_test)
-            $content = str_replace(self::$site_url, self::$replacement_test, $content);
-
-        return $content;
-    }
-
 }
 
 Https_Links::instance();
