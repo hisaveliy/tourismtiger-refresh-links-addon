@@ -58,12 +58,38 @@ class Https_Links
      * Fields constructor.
      */
     function __construct () {
+        add_action('init', __CLASS__ . '::refresh_links');
         add_filter('the_content', __CLASS__.'::update_content');
         add_filter('tt2_editor_content', __CLASS__.'::update_content');
         add_action('admin_bar_menu', __CLASS__ . '::admin_bar_menu', 500);
     }
 
 
+    /**
+     *
+     */
+    public static function refresh_links() {
+
+        if (isset($_GET['refresh_links'])) :
+            self::refresh_links_processing();
+
+            show_notice( __('Links have been successfully refreshed!', 'tourismtiger-theme'), 'success' );
+        endif;
+
+    }
+
+
+    /**
+     *
+     */
+    private static function refresh_links_processing(){
+        print_r_html(["Links refresh initialized!"]);
+    }
+
+
+    /**
+     * @param $wp_admin_bar
+     */
     public static function admin_bar_menu( $wp_admin_bar ) {
         $item = (object) array(
             'slug' => 'refresh_links',
@@ -87,6 +113,10 @@ class Https_Links
     }
 
 
+    /**
+     * @param $content
+     * @return string|string[]
+     */
     public static function update_content($content){
         if (self::$https_link)
             $content = str_replace(self::$needle, self::$site_url, $content);
