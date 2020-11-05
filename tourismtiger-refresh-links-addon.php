@@ -91,9 +91,9 @@ class Https_Links
         if ( $links_meta ) :
             $query = "UPDATE {$wpdb->postmeta} 
                     SET 
-                        post_content = REPLACE( post_content, '". self::$needle ."', '". self::$site_url ."' )
+                        meta_value = REPLACE( meta_value, '". self::$needle ."', '". self::$site_url ."' )
                     WHERE
-                        post_content LIKE '%".self::$needle."%'";
+                        meta_value LIKE '%".self::$needle."%'";
             $resp += $wpdb->query( $query );
         endif;
 
