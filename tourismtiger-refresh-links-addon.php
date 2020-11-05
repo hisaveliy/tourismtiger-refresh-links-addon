@@ -23,9 +23,6 @@ class Https_Links
     protected static $https_link = 0;
     protected static $needle = null;
 
-    protected static $https_link_test = 0;
-    protected static $replacement_test = null;
-
     /**
      * Return an instance of this class.
      *
@@ -43,11 +40,6 @@ class Https_Links
             if (strpos(self::$site_url, 'https://') === 0) :
                 self::$https_link = 1;
                 self::$needle = str_replace('https://', 'http://', self::$site_url );
-            endif;
-
-            if ( false && strpos(self::$site_url, 'http://') === 0 ) : // TODO: For testing while development
-                self::$https_link_test = 1;
-                self::$replacement_test = str_replace('http://', 'https://', self::$site_url );
             endif;
         }
 
@@ -106,41 +98,6 @@ class Https_Links
         endif;
 
         return $resp;
-    }
-
-
-    /**
-     * Testing function for demo purposes
-     */
-    public static function refresh_links_processing_test(){
-        return;
-
-        global $wpdb;
-        $resp = '';
-
-        $query = "SELECT * FROM " . $wpdb->posts . " WHERE post_content LIKE '%".self::$site_url."%'";
-        $links = $wpdb->query( $query );
-
-        $query = "SELECT * FROM " . $wpdb->postmeta . " WHERE meta_value LIKE '%".self::$site_url."%'";
-        $links_meta = $wpdb->query( $query );
-
-        if ( $links ) :
-            $query = "UPDATE {$wpdb->posts} 
-                    SET 
-                        post_content = REPLACE( post_content, '". self::$site_url ."', '". self::$replacement_test ."' )
-                    WHERE
-                        post_content LIKE '%".self::$site_url."%'";
-
-            $query_test = "UPDATE {$wpdb->posts} 
-                    SET 
-                        post_content = REPLACE( post_content, '". self::$replacement_test ."', '". self::$site_url ."' )
-                    WHERE
-                        post_content LIKE '%".self::$replacement_test."%'";
-
-            $resp = $wpdb->query( $query );
-        endif;
-
-        // print_r_html([$links, $links_meta, 'resp'=>$resp, $query, self::$replacement_test, self::$https_link_test]);
     }
 
 
