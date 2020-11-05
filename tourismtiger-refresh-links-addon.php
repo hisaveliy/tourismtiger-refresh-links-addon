@@ -63,7 +63,7 @@ class Https_Links
         if (isset($_GET['refresh_links'])) :
             $links_number = self::refresh_links_processing();
 
-            show_notice( __('Links have been successfully refreshed!', 'tourismtiger-theme'), 'success' );
+            show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
         endif;
 
     }
