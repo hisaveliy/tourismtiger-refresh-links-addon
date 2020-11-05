@@ -37,7 +37,7 @@ class Https_Links
             self::$instance = new self;
             self::$site_url = get_bloginfo('url');
 
-            if (strpos(self::$site_url, 'https://') === 0) :
+            if ( strpos(self::$site_url, 'https://' ) === 0) :
                 self::$https_link = 1;
                 self::$needle = str_replace('https://', 'http://', self::$site_url );
             endif;
