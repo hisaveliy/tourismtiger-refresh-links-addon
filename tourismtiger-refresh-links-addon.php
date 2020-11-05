@@ -40,12 +40,12 @@ class Https_Links
             self::$instance = new self;
             self::$site_url = get_bloginfo('url');
 
-            if (strpos(self::$site_url, 'https://')) :
+            if (strpos(self::$site_url, 'https://') === 0) :
                 self::$https_link = 1;
                 self::$needle = str_replace('https://', 'http://', self::$site_url );
             endif;
 
-            if (strpos(self::$site_url, 'http://')) : // TODO: Test
+            if ( strpos(self::$site_url, 'http://') === 0 ) : // TODO: Test
                 self::$https_link_test = 1;
                 self::$replacement_test = str_replace('http://', 'https://', self::$site_url );
             endif;
@@ -59,8 +59,6 @@ class Https_Links
      */
     function __construct () {
         add_action('init', __CLASS__ . '::refresh_links');
-        add_filter('the_content', __CLASS__.'::update_content');
-        add_filter('tt2_editor_content', __CLASS__.'::update_content');
         add_action('admin_bar_menu', __CLASS__ . '::admin_bar_menu', 500);
     }
 
@@ -82,8 +80,33 @@ class Https_Links
     /**
      *
      */
-    private static function refresh_links_processing(){
-        print_r_html(["Links refresh initialized!"]);
+    public static function refresh_links_processing(){
+        global $wpdb;
+        $resp = '';
+
+        $query = "SELECT * FROM " . $wpdb->posts . " WHERE post_content LIKE '%".self::$site_url."%'";
+        $links = $wpdb->query( $query );
+
+        $query = "SELECT * FROM " . $wpdb->postmeta . " WHERE meta_value LIKE '%".self::$site_url."%'";
+        $links_meta = $wpdb->query( $query );
+
+        if ( $links ) :
+            $query = "UPDATE {$wpdb->posts} 
+                    SET 
+                        post_content = REPLACE( post_content, '". self::$site_url ."', '". self::$replacement_test ."' )
+                    WHERE
+                        post_content LIKE '%".self::$site_url."%'";
+
+            $query_test = "UPDATE {$wpdb->posts} 
+                    SET 
+                        post_content = REPLACE( post_content, '". self::$replacement_test ."', '". self::$site_url ."' )
+                    WHERE
+                        post_content LIKE '%".self::$replacement_test."%'";
+
+            $resp = $wpdb->query( $query );
+        endif;
+
+        print_r_html([$links, $links_meta, 'resp'=>$resp, $query, self::$replacement_test, self::$https_link_test]);
     }
 
 
