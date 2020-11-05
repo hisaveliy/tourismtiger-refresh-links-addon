@@ -60,10 +60,17 @@ class Https_Links
      */
     public static function refresh_links() {
 
-        if (isset($_GET['refresh_links'])) :
+        if (isset($_GET['refresh_links']) && self::$https_link) :
             $links_number = self::refresh_links_processing();
 
-            show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
+            if ( $links_number )
+                show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
+            else
+                show_notice( __('All links already updated!', 'tourismtiger-theme'), 'success' );
+
+        elseif (isset($_GET['refresh_links']) && !self::$https_link) :
+
+            show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
         endif;
 
     }
