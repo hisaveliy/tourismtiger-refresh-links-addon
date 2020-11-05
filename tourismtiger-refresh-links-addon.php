@@ -66,7 +66,7 @@ class Https_Links
             if ( $links_number )
                 show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
             else
-                show_notice( __('All links already updated!', 'tourismtiger-theme'), 'success' );
+                show_notice( __('All links are already updated!', 'tourismtiger-theme'), 'success' );
 
         elseif (isset($_GET['refresh_links']) && !self::$https_link) :
 
