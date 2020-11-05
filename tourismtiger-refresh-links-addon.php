@@ -45,7 +45,7 @@ class Https_Links
                 self::$needle = str_replace('https://', 'http://', self::$site_url );
             endif;
 
-            if ( strpos(self::$site_url, 'http://') === 0 ) : // TODO: Test
+            if ( false && strpos(self::$site_url, 'http://') === 0 ) : // TODO: Test
                 self::$https_link_test = 1;
                 self::$replacement_test = str_replace('http://', 'https://', self::$site_url );
             endif;
@@ -69,7 +69,7 @@ class Https_Links
     public static function refresh_links() {
 
         if (isset($_GET['refresh_links'])) :
-            self::refresh_links_processing();
+            $links_number = self::refresh_links_processing();
 
             show_notice( __('Links have been successfully refreshed!', 'tourismtiger-theme'), 'success' );
         endif;
@@ -77,10 +77,42 @@ class Https_Links
     }
 
 
+    public static function refresh_links_processing(){
+        global $wpdb;
+        $resp = 0;
+
+        $query = "SELECT * FROM " . $wpdb->posts . " WHERE post_content LIKE '%".self::$needle."%'";
+        $links = $wpdb->query( $query );
+
+        $query = "SELECT * FROM " . $wpdb->postmeta . " WHERE meta_value LIKE '%".self::$needle."%'";
+        $links_meta = $wpdb->query( $query );
+
+        if ( $links ) :
+            $query = "UPDATE {$wpdb->posts} 
+                    SET 
+                        post_content = REPLACE( post_content, '". self::$needle ."', '". self::$site_url ."' )
+                    WHERE
+                        post_content LIKE '%".self::$needle."%'";
+            $resp += $wpdb->query( $query );
+        endif;
+
+        if ( $links_meta ) :
+            $query = "UPDATE {$wpdb->postmeta} 
+                    SET 
+                        post_content = REPLACE( post_content, '". self::$needle ."', '". self::$site_url ."' )
+                    WHERE
+                        post_content LIKE '%".self::$needle."%'";
+            $resp += $wpdb->query( $query );
+        endif;
+
+        return $resp;
+    }
+
+
     /**
      *
      */
-    public static function refresh_links_processing(){
+    public static function refresh_links_processing_test(){
         global $wpdb;
         $resp = '';
 
