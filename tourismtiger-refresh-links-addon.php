@@ -9,6 +9,8 @@ Author: TourismTiger
 Author URI: https://www.tourismtiger.com
 Text Domain: https-links
 Domain Path: /lang
+GitHub Plugin URI: https://github.com/hisaveliy/tourismtiger-refresh-links-addon.git
+GitHub Plugin URI: hisaveliy/tourismtiger-refresh-links-addon.git
 */
 
 if( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
