@@ -4,7 +4,7 @@
 Plugin Name: TourismTiger Refresh Links Add-on
 Plugin URI: https://www.tourismtiger.com
 Description: Replaces all the http links related to its domain to https, if the domain is based on https.
-Version: 1.0.1
+Version: 1.1.0
 Author: TourismTiger
 Author URI: https://www.tourismtiger.com
 Text Domain: https-links
@@ -32,6 +32,8 @@ if( ! class_exists('Https_Links') ) :
     protected static $site_url = null;
     protected static $https_link = 0;
     protected static $needle = null;
+    protected static $conditional = 0;
+    protected static $http_replace = 0;
 
     /**
      * Return an instance of this class.
@@ -49,6 +51,7 @@ if( ! class_exists('Https_Links') ) :
 
             if ( strpos(self::$site_url, 'https://' ) === 0) :
                 self::$https_link = 1;
+                self::$conditional = 1;
                 self::$needle = str_replace('https://', 'http://', self::$site_url );
             endif;
         }
@@ -77,7 +80,23 @@ if( ! class_exists('Https_Links') ) :
      */
     public static function refresh_links() {
 
-        if (isset($_GET['refresh_links']) && self::$https_link) :
+        if ( isset($_GET['refresh_links']) ) :
+            self::$http_replace = get_field('http-replace', PREFIX);
+
+            if ( self::$http_replace ) :
+                self::$conditional = self::$https_link;
+            else :
+                self::$needle = get_field('needle', PREFIX) ?? '';
+                self::$site_url = get_field('replace', PREFIX)?? '';
+
+                if ( self::$needle && self::$site_url )
+                    self::$conditional = 1;
+            endif;
+        endif;
+
+
+        if ( isset($_GET['refresh_links']) && self::$conditional ) :
+
             $links_number = self::refresh_links_processing();
 
             if ( $links_number )
@@ -85,9 +104,14 @@ if( ! class_exists('Https_Links') ) :
             else
                 show_notice( __('All links are already updated!', 'tourismtiger-theme'), 'success' );
 
-        elseif (isset($_GET['refresh_links']) && !self::$https_link) :
+        elseif ( isset($_GET['refresh_links']) && !self::$conditional ) :
 
-            show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
+            if ( self::$http_replace && !self::$https_link )
+                show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
+
+            else
+                show_notice( __('Please fill out required fields!', 'tourismtiger-theme'), 'error' );
+
         endif;
 
     }
@@ -175,13 +199,7 @@ if( ! class_exists('Https_Links') ) :
         //add plugin action and meta links
         self::plugin_links(array(
             'actions' => array(
-                PLUGIN_SETTINGS_URL => __('Settings', 'tourismtiger'),
-                // admin_url('admin.php?page=wc-status&tab=logs') => __('Logs', 'tourismtiger'),
-                // admin_url('plugins.php?action='.PREFIX.'_check_updates') => __('Check for Updates', 'tourismtiger')
-            ),
-            'meta' => array(
-                // '#1' => __('Docs', 'tourismtiger'),
-                // '#2' => __('Visit website', 'tourismtiger')
+                PLUGIN_SETTINGS_URL => __('Settings', 'tourismtiger-theme'),
             ),
         ));
     }
