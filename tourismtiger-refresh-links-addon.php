@@ -13,12 +13,20 @@ GitHub Plugin URI: https://github.com/hisaveliy/tourismtiger-refresh-links-addon
 GitHub Plugin URI: hisaveliy/tourismtiger-refresh-links-addon.git
 */
 
+namespace TourismTiger\Refresh_Links;
+
 if( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 if( ! class_exists('Https_Links') ) :
 
+    define(__NAMESPACE__ . '\PREFIX', 'refresh_links');
+    define(__NAMESPACE__ . '\TEXT_DOMAIN', 'refresh_links');
+    define(__NAMESPACE__ . '\PLUGIN_SHORTNAME', 'Refresh Links');
+    define(__NAMESPACE__ . '\PLUGIN_DIR', untrailingslashit(plugin_dir_path(__FILE__)));
+    define(__NAMESPACE__ . '\PLUGIN_SETTINGS_URL', admin_url('admin.php?page='.PREFIX));
+    define(__NAMESPACE__ . '\PLUGIN_BASENAME', plugin_basename(PLUGIN_DIR) . '/tourismtiger-refresh-links-addon.php');
 
-class Https_Links
+    class Https_Links
 {
     protected static $instance = null;
     protected static $site_url = null;
@@ -54,6 +62,13 @@ class Https_Links
     function __construct () {
         add_action('init', __CLASS__ . '::refresh_links');
         add_action('admin_bar_menu', __CLASS__ . '::admin_bar_menu', 500);
+
+        self::init_plugin_action_links();
+
+        spl_autoload_register( __CLASS__ . '::autoload' );
+
+        new OptionsPageTT();
+        new FieldGroups();
     }
 
 
@@ -134,6 +149,85 @@ class Https_Links
             )
         );
     }
+
+
+    public static function autoload($filename) {
+
+        $dir = PLUGIN_DIR . '/autoload/class-*.php';
+        $paths = glob($dir);
+
+        if (defined('GLOB_BRACE')) {
+            $paths = glob( '{' . $dir . '}', GLOB_BRACE );
+        }
+
+        if ( is_array($paths) && count($paths) > 0 ){
+            foreach( $paths as $file ) {
+                if ( file_exists( $file ) ) {
+                    include_once $file;
+                }
+            }
+        }
+    }
+
+
+    public static function init_plugin_action_links(){
+
+        //add plugin action and meta links
+        self::plugin_links(array(
+            'actions' => array(
+                PLUGIN_SETTINGS_URL => __('Settings', 'tourismtiger'),
+                // admin_url('admin.php?page=wc-status&tab=logs') => __('Logs', 'tourismtiger'),
+                // admin_url('plugins.php?action='.PREFIX.'_check_updates') => __('Check for Updates', 'tourismtiger')
+            ),
+            'meta' => array(
+                // '#1' => __('Docs', 'tourismtiger'),
+                // '#2' => __('Visit website', 'tourismtiger')
+            ),
+        ));
+    }
+
+
+    private static function plugin_links($sections = array()) {
+
+            //actions
+            if (isset($sections['actions'])){
+
+                $actions = $sections['actions'];
+                $links_hook = is_multisite() ? 'network_admin_plugin_action_links_' : 'plugin_action_links_';
+
+                add_filter($links_hook.PLUGIN_BASENAME, function($links) use ($actions){
+
+                    foreach(array_reverse($actions) as $url => $label){
+                        $link = '<a href="'.$url.'">'.$label.'</a>';
+                        array_unshift($links, $link);
+                    }
+
+                    return $links;
+
+                });
+            }
+
+            //meta row
+            if (isset($sections['meta'])){
+
+                $meta = $sections['meta'];
+
+                add_filter( 'plugin_row_meta', function($links, $file) use ($meta){
+
+                    if (PLUGIN_BASENAME == $file){
+
+                        foreach ($meta as $url => $label){
+                            $link = '<a href="'.$url.'">'.$label.'</a>';
+                            array_push($links, $link);
+                        }
+                    }
+
+                    return $links;
+
+                }, 10, 2 );
+            }
+
+        }
 }
 
 Https_Links::instance();
