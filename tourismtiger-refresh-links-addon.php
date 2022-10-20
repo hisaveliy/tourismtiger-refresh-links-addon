@@ -81,10 +81,22 @@ if( ! class_exists('Https_Links') ) :
     public static function refresh_links() {
 
         if ( get_field('remove-data-active', PREFIX)  ) :
-            $shortcodes = get_field('shortcodes', PREFIX);
+            $shortcodes_str = get_field('shortcodes', PREFIX);
             $remove_images_with_dead_links = get_field('remove-images-with-dead-links', PREFIX);
 
-            print_r_html([[[['$shortcodes'=>$shortcodes, '$remove_images_with_dead_links'=>$remove_images_with_dead_links]]]]);
+            $shortcodes = explode(',', str_replace(' ', '', $shortcodes_str));
+
+            if ( $shortcodes && is_array($shortcodes) && count($shortcodes) )
+                $posts_with_shortcodes_processed = self::process_shortcodes_deletion($shortcodes);
+
+            if ( $remove_images_with_dead_links )
+                $posts_with_images_removal_processed = self::process_dead_links_removal();
+
+            print_r_html([[[['$shortcodes'=>$shortcodes,
+                '$remove_images_with_dead_links'=>$remove_images_with_dead_links,
+                '$posts_with_shortcodes_processed'=>$posts_with_shortcodes_processed ?? 'no posts_with_shortcodes_removal_processed',
+                '$posts_with_images_removal_processed'=>$posts_with_images_removal_processed ?? 'no posts_with_images_removal_processed'
+                ]]]]);
         endif;
 
 
@@ -124,6 +136,21 @@ if( ! class_exists('Https_Links') ) :
             endif;
         endif;
 
+    }
+
+
+    private static function process_shortcodes_deletion( $shortcodes ){
+        $posts = [];
+
+        return count($posts) ? $posts : 'no posts_with_shortcodes_removal_processed';
+    }
+
+
+
+    private static function process_dead_links_removal(){
+        $posts = [];
+
+        return count($posts) ? $posts : 'no posts_with_images_removal_processed';
     }
 
 
