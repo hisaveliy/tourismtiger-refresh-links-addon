@@ -40,6 +40,23 @@ class FieldGroups {
             'title' => sprintf( __('%s Settings', TEXT_DOMAIN), PLUGIN_SHORTNAME ),
             'fields' => array(
                 array(
+                    'key' => self::prefix($key, '002'),
+                    'label' => __('Refresh links', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'refresh-links-tab',
+                    'type' => 'tab',
+                    'default'=>0,
+                    'ui'=>1
+                ),
+                array(
+                    'key' => self::prefix($key, '002a'),
+                    'label' => __('Activate', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'refresh-links-active',
+                    'type' => 'true_false',
+                    'ui'=>1
+                ),
+                array(
                     'key' => self::prefix($key, '003'),
                     'label' => __('Needle', TEXT_DOMAIN),
                     'instructions' => 'The value being searched for (in posts content).',
@@ -60,6 +77,38 @@ class FieldGroups {
                     'name' => 'http-replace',
                     'type' => 'true_false',
                     'default'=>0,
+                    'ui'=>1
+                ),
+                array(
+                    'key' => self::prefix($key, '006'),
+                    'label' => __('Remove data from blog posts', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'remove-data-tab',
+                    'type' => 'tab',
+                    'default'=>0,
+                    'ui'=>1
+                ),
+                array(
+                    'key' => self::prefix($key, '007'),
+                    'label' => __('Activate', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'remove-data-active',
+                    'type' => 'true_false',
+                    'ui'=>1
+                ),
+                array(
+                    'key' => self::prefix($key, '008'),
+                    'label' => __('Remove shortcodes', TEXT_DOMAIN),
+                    'instructions' => 'Coma separated values to activate and proceed.',
+                    'name' => 'shortcodes',
+                    'type' => 'text',
+                ),
+                array(
+                    'key' => self::prefix($key, '009'),
+                    'label' => __('Remove images with dead links', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'remove-images-with-dead-links',
+                    'type' => 'true_false',
                     'ui'=>1
                 ),
             ),

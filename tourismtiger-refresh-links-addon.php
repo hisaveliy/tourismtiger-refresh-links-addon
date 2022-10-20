@@ -80,38 +80,48 @@ if( ! class_exists('Https_Links') ) :
      */
     public static function refresh_links() {
 
-        if ( isset($_GET['refresh_links']) ) :
-            self::$http_replace = get_field('http-replace', PREFIX);
+        if ( get_field('remove-data-active', PREFIX)  ) :
+            $shortcodes = get_field('shortcodes', PREFIX);
+            $remove_images_with_dead_links = get_field('remove-images-with-dead-links', PREFIX);
 
-            if ( self::$http_replace ) :
-                self::$conditional = self::$https_link;
-            else :
-                self::$needle = get_field('needle', PREFIX) ?? '';
-                self::$site_url = get_field('replace', PREFIX)?? '';
-
-                if ( self::$needle && self::$site_url )
-                    self::$conditional = 1;
-            endif;
+            print_r_html([[[['$shortcodes'=>$shortcodes, '$remove_images_with_dead_links'=>$remove_images_with_dead_links]]]]);
         endif;
 
 
-        if ( isset($_GET['refresh_links']) && self::$conditional ) :
+        if ( get_field('refresh-links-active', PREFIX)  ) :
 
-            $links_number = self::refresh_links_processing();
+            if ( isset($_GET['refresh_links']) ) :
+                self::$http_replace = get_field('http-replace', PREFIX);
 
-            if ( $links_number )
-                show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
-            else
-                show_notice( __('All links are already updated!', 'tourismtiger-theme'), 'success' );
+                if ( self::$http_replace ) :
+                    self::$conditional = self::$https_link;
+                else :
+                    self::$needle = get_field('needle', PREFIX) ?? '';
+                    self::$site_url = get_field('replace', PREFIX)?? '';
 
-        elseif ( isset($_GET['refresh_links']) && !self::$conditional ) :
+                    if ( self::$needle && self::$site_url )
+                        self::$conditional = 1;
+                endif;
+            endif;
 
-            if ( self::$http_replace && !self::$https_link )
-                show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
+            if ( isset($_GET['refresh_links']) && self::$conditional ) :
 
-            else
-                show_notice( __('Please fill out required fields!', 'tourismtiger-theme'), 'error' );
+                $links_number = self::refresh_links_processing();
 
+                if ( $links_number )
+                    show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
+                else
+                    show_notice( __('All links are already updated!', 'tourismtiger-theme'), 'success' );
+
+            elseif ( isset($_GET['refresh_links']) && !self::$conditional ) :
+
+                if ( self::$http_replace && !self::$https_link )
+                    show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
+
+                else
+                    show_notice( __('Please fill out required fields!', 'tourismtiger-theme'), 'error' );
+
+            endif;
         endif;
 
     }
