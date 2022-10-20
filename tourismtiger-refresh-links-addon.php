@@ -95,8 +95,7 @@ if( ! class_exists('Https_Links') ) :
                     $uploads_dir = wp_upload_dir();
                     $posts_with_images_removal_processed = self::process_dead_links_removal($uploads_dir['basedir'], $uploads_dir['baseurl']);
                 endif;
-
-                if ( $_GET['log_data'] )
+                
                     print_r_html([[[['$shortcodes'=>$shortcodes,
                         '$remove_images_with_dead_links'=>$remove_images_with_dead_links,
                         '$posts_with_shortcodes_processed'=>$posts_with_shortcodes_processed ?? 'no posts_with_shortcodes_removal_processed',
