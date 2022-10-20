@@ -4,7 +4,7 @@
 Plugin Name: TourismTiger Refresh Links Add-on
 Plugin URI: https://www.tourismtiger.com
 Description: Replaces all the http links related to its domain to https, if the domain is based on https.
-Version: 1.2.0
+Version: 1.2.1
 Author: TourismTiger
 Author URI: https://www.tourismtiger.com
 Text Domain: https-links
@@ -95,7 +95,7 @@ if( ! class_exists('Https_Links') ) :
                     $uploads_dir = wp_upload_dir();
                     $posts_with_images_removal_processed = self::process_dead_links_removal($uploads_dir['basedir'], $uploads_dir['baseurl']);
                 endif;
-                
+
                     print_r_html([[[['$shortcodes'=>$shortcodes,
                         '$remove_images_with_dead_links'=>$remove_images_with_dead_links,
                         '$posts_with_shortcodes_processed'=>$posts_with_shortcodes_processed ?? 'no posts_with_shortcodes_removal_processed',
@@ -171,8 +171,9 @@ if( ! class_exists('Https_Links') ) :
 
                 foreach ( $posts as $p ):
                     $post_content = $p->post_content;
-                    $replace = preg_replace($regex, '', $post_content);
-                    if ( $replace ) :
+                    preg_match_all($regex, $post_content, $matches );
+                    if ( $matches && is_array($matches) && count($matches) ) :
+                        $replace = preg_replace($regex, '', $post_content);
                         $posts_ids[] = $p->ID;
                         $p->post_content = $replace;
                         wp_update_post($p);
