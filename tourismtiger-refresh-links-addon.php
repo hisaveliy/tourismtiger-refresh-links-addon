@@ -80,7 +80,7 @@ if( ! class_exists('Https_Links') ) :
      */
     public static function refresh_links() {
 
-        if ( get_field('remove-data-active', PREFIX)  ) :
+        if ( isset($_GET['refresh_links']) && get_field('remove-data-active', PREFIX)  ) :
             $shortcodes_str = get_field('shortcodes', PREFIX);
             $remove_images_with_dead_links = get_field('remove-images-with-dead-links', PREFIX);
 
@@ -140,9 +140,34 @@ if( ! class_exists('Https_Links') ) :
 
 
     private static function process_shortcodes_deletion( $shortcodes ){
-        $posts = [];
 
-        return count($posts) ? $posts : 'no posts_with_shortcodes_removal_processed';
+        global $wpdb;
+        $posts_ids = [];
+
+        foreach ($shortcodes as $shortcode ) :
+            $needle = '\\\[' . $shortcode . '.*\\\]';
+            $regex = '/\[' . $shortcode . '(.*?)]/';
+
+            $query = "SELECT * FROM " . $wpdb->posts . " WHERE post_content REGEXP '".$needle."'";
+            $links = $wpdb->query( $query );
+
+            if ( $links ) :
+                $posts = get_posts(['numberposts'=> -1]);
+
+                foreach ( $posts as $p ):
+                    $post_content = $p->post_content;
+                    $replace = preg_replace($regex, '', $post_content);
+                    if ( $replace ) :
+                        $posts_ids[] = $p->ID;
+                        $p->post_content = $replace;
+                        wp_update_post($p);
+                    endif;
+                endforeach;
+            endif;
+        endforeach;
+
+        return ['$posts'=>count($posts_ids)];
+
     }
 
 
