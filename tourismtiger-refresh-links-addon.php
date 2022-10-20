@@ -80,30 +80,32 @@ if( ! class_exists('Https_Links') ) :
      */
     public static function refresh_links() {
 
-        if ( isset($_GET['refresh_links']) && get_field('remove-data-active', PREFIX)  ) :
-            $shortcodes_str = get_field('shortcodes', PREFIX);
-            $remove_images_with_dead_links = get_field('remove-images-with-dead-links', PREFIX);
+        if ( isset($_GET['page']) && $_GET['page']==='refresh_links' ) :
 
-            $shortcodes = explode(',', str_replace(' ', '', $shortcodes_str));
+            if ( get_field('remove-data-active', PREFIX)  ) :
+                $shortcodes_str = get_field('shortcodes', PREFIX);
+                $remove_images_with_dead_links = get_field('remove-images-with-dead-links', PREFIX);
 
-            if ( $shortcodes && is_array($shortcodes) && count($shortcodes) )
-                $posts_with_shortcodes_processed = self::process_shortcodes_deletion($shortcodes);
+                $shortcodes = $shortcodes_str ?  explode(',', str_replace(' ', '', $shortcodes_str)) : '';
 
-            if ( $remove_images_with_dead_links )
-                $posts_with_images_removal_processed = self::process_dead_links_removal();
+                if ( $shortcodes && is_array($shortcodes) && count($shortcodes) )
+                    $posts_with_shortcodes_processed = self::process_shortcodes_deletion($shortcodes);
 
-            if ( 1===2 )
+                if ( $remove_images_with_dead_links ) :
+                    $uploads_dir = wp_upload_dir();
+                    $posts_with_images_removal_processed = self::process_dead_links_removal($uploads_dir['basedir'], $uploads_dir['baseurl']);
+                endif;
+
                 print_r_html([[[['$shortcodes'=>$shortcodes,
                     '$remove_images_with_dead_links'=>$remove_images_with_dead_links,
                     '$posts_with_shortcodes_processed'=>$posts_with_shortcodes_processed ?? 'no posts_with_shortcodes_removal_processed',
-                    '$posts_with_images_removal_processed'=>$posts_with_images_removal_processed ?? 'no posts_with_images_removal_processed'
+                    '$posts_with_images_removal_processed'=>$posts_with_images_removal_processed ?? 'no posts_with_images_removal_processed',
                     ]]]]);
-        endif;
+            endif;
 
 
-        if ( get_field('refresh-links-active', PREFIX)  ) :
+            if ( get_field('refresh-links-active', PREFIX)  ) :
 
-            if ( isset($_GET['refresh_links']) ) :
                 self::$http_replace = get_field('http-replace', PREFIX);
 
                 if ( self::$http_replace ) :
@@ -115,26 +117,27 @@ if( ! class_exists('Https_Links') ) :
                     if ( self::$needle && self::$site_url )
                         self::$conditional = 1;
                 endif;
+
+                if ( self::$conditional ) :
+
+                    $links_number = self::refresh_links_processing();
+
+                    if ( $links_number )
+                        show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
+                    else
+                        show_notice( __('All links are already updated!', 'tourismtiger-theme'), 'success' );
+
+                elseif ( !self::$conditional ) :
+
+                    if ( self::$http_replace && !self::$https_link )
+                        show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
+
+                    else
+                        show_notice( __('Please fill out required fields!', 'tourismtiger-theme'), 'error' );
+
+                endif;
             endif;
 
-            if ( isset($_GET['refresh_links']) && self::$conditional ) :
-
-                $links_number = self::refresh_links_processing();
-
-                if ( $links_number )
-                    show_notice( sprintf(__('%d links have been successfully refreshed!', 'tourismtiger-theme'), $links_number ), 'success' );
-                else
-                    show_notice( __('All links are already updated!', 'tourismtiger-theme'), 'success' );
-
-            elseif ( isset($_GET['refresh_links']) && !self::$conditional ) :
-
-                if ( self::$http_replace && !self::$https_link )
-                    show_notice( __('This site domain is not based on https!', 'tourismtiger-theme'), 'error' );
-
-                else
-                    show_notice( __('Please fill out required fields!', 'tourismtiger-theme'), 'error' );
-
-            endif;
         endif;
 
     }
@@ -173,10 +176,45 @@ if( ! class_exists('Https_Links') ) :
 
 
 
-    private static function process_dead_links_removal(){
-        $posts = [];
+    public static function process_dead_links_removal($uploads_path, $uploads_url){
+        $posts = get_posts(['numberposts'=> -1]);
+        $updated = [];
 
-        return count($posts) ? $posts : 'no posts_with_images_removal_processed';
+        $regex = '/(<img)(.*?)(src=[\'\"])(.*)([\'\"])(.*?)(>)/';
+
+
+        foreach ( $posts as $p ):
+            $post_content = $p->post_content;
+
+            preg_match_all($regex, $post_content, $matches);
+
+            if ( $matches && is_array($matches) && count($matches) ) :
+                $need_update = false;
+
+                $images = $matches[0];
+                $paths = [];
+
+                foreach ( $matches[4] as $match ) :
+                    $position = strpos( $match, ' ');
+                    $paths[] = str_replace($uploads_url, $uploads_path, substr($match, 0, $position - 1));
+                endforeach;
+
+                foreach (  $paths as $key=>$path ) :
+                    if ( !file_exists($path) ):
+                        $need_update = true;
+                        $post_content = str_replace($images[$key], '', $post_content);
+                    endif;
+                endforeach;
+
+                $p->post_content = $post_content;
+
+                if ($need_update)
+                    $updated[$p->ID] = wp_update_post($p);
+
+            endif;
+        endforeach;
+
+        return count($updated) ?: 'no posts_with_images_removal_processed';
     }
 
 
