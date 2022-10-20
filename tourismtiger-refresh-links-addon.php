@@ -147,16 +147,27 @@ if( ! class_exists('Https_Links') ) :
 
         global $wpdb;
         $posts_ids = [];
+        $query = '';
 
         foreach ($shortcodes as $shortcode ) :
-            $needle = '\\\[' . $shortcode . '.*\\\]';
-            $regex = '/\[' . $shortcode . '(.*?)]/';
+            if ( strpos($shortcode, ']-[/') ) :
+
+                $text = explode(']-[/', $shortcode);
+                $code = str_replace('[', '', $text[0]);
+
+                $needle = '\\\[' . $code . '.*\\\].*\\\[\\/'.$code.'.*\\\]';
+                $regex = '/\[' . $code . '(.*?)'. $code . ']/';
+            else :
+                $needle = '\\\[' . $shortcode . '.*\\\]';
+                $regex = '/\[' . $shortcode . '(.*?)]/';
+            endif;
 
             $query = "SELECT * FROM " . $wpdb->posts . " WHERE post_content REGEXP '".$needle."'";
+
             $links = $wpdb->query( $query );
 
             if ( $links ) :
-                $posts = get_posts(['numberposts'=> -1]);
+                $posts = get_posts(['numberposts'=> -1, 'post_status'=>'any']);
 
                 foreach ( $posts as $p ):
                     $post_content = $p->post_content;
@@ -170,7 +181,7 @@ if( ! class_exists('Https_Links') ) :
             endif;
         endforeach;
 
-        return ['$posts'=>count($posts_ids)];
+        return ['$posts'=>count($posts_ids), '$query'=>$query];
 
     }
 
