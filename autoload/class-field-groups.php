@@ -111,6 +111,23 @@ class FieldGroups {
                     'type' => 'true_false',
                     'ui'=>1
                 ),
+                array(
+                    'key' => self::prefix($key, '010'),
+                    'label' => __('Generate posts content', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'generate-post-content-tab',
+                    'type' => 'tab',
+                    'default'=>0,
+                    'ui'=>1
+                ),
+                array(
+                    'key' => self::prefix($key, '011'),
+                    'label' => __('Activate for blog posts', TEXT_DOMAIN),
+                    'instructions' => '',
+                    'name' => 'generate-post-content-for-blog-posts-active',
+                    'type' => 'true_false',
+                    'ui'=>1
+                ),
             ),
             'location' => array(
                 array(

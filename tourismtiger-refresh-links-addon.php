@@ -4,7 +4,7 @@
 Plugin Name: TourismTiger Refresh Links Add-on
 Plugin URI: https://www.tourismtiger.com
 Description: Replaces all the http links related to its domain to https, if the domain is based on https.
-Version: 1.2.1
+Version: 1.2.2
 Author: TourismTiger
 Author URI: https://www.tourismtiger.com
 Text Domain: https-links
@@ -136,6 +136,10 @@ if( ! class_exists('Https_Links') ) :
                         show_notice( __('Please fill out required fields!', 'tourismtiger-theme'), 'error' );
 
                 endif;
+            endif;
+
+            if ( get_field('generate-post-content-for-blog-posts-active', PREFIX)  ) :
+                Generate_Content::get_content_for_blog_posts();
             endif;
 
         endif;
